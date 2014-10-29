@@ -59,10 +59,9 @@ class Post:
         return [int(id) for id in ids]
 
     def is_band(self):
-        t = self.com()
-        if re.search(r'%s', t):
-            print "\n\n\t",t,"\n\n"
-        r = re.search(r'\.bandcamp\.com', textify(self.com()))
+        t = textify(self.com())
+        r = re.search(r'\.bandcamp\.com', t)
+        return r is not None
 
 
     def is_comment(self):
@@ -128,18 +127,18 @@ class Thread(Post):
         return self.last_datetime() > thr.last_datetime()
 
 def is_band_thread(thr):
-    sub = thr.get('sub', '')
-    com = thr.get('com', '')
+    sub = textify(thr.get('sub', ''))
+    com = textify(thr.get('com', ''))
     rx = r'bandcamp.+(?:topic|thread)'
     f = re.IGNORECASE
 
-    if re.match(rx, sub, flags=f) or re.match(rx, com, flags=f):
+    if re.search(rx, sub, flags=f) or re.match(rx, com, flags=f):
         return True
 
     n = 0
     threshold = 3
 
-    if Thread(json=thr).is_band():
+    if Post(json=thr).is_band():
         n += 1
 
     for pj in thr.get('last_replies', []):
