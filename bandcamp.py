@@ -29,8 +29,11 @@ def urlify(text):
     return re.sub(URL_REGEX, repl_url, text)
 
 class BandcampUrl:
-    def __init__(self, url):
-        self._url = url
+    def __init__(self, url=None, slug=None):
+        if slug:
+            self._url = 'https://%s.bandcamp.com' % slug
+        else:
+            self._url = url
         self._artist = None
         self._bs = None
 
@@ -53,6 +56,10 @@ class BandcampUrl:
         if m.group(2):
             base += m.group(2)
         return base
+
+    def band_slug(self):
+        m = re.match(URL_CAPTURE_REGEX, self._url)
+        return m.group(1)
 
 #
 # TESTS
