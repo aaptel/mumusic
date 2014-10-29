@@ -1,1 +1,3 @@
 google_appengine
+*.pyc
+*~
