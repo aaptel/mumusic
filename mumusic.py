@@ -90,9 +90,9 @@ class OpenPage(webapp2.RequestHandler):
             r.write('<h2><a href="http://boards.4chan.org/mu/thread/%d">"%s"</a></h2>' % (thr.id(), thr.sub()))
             for b in thr.posts:
                 if b.is_band():
-                    r.write('<pre style="background: #aaaaaa;">%s</pre>' % cgi.escape(b.com()))
+                    r.write('<div id="p%d" style="background: #cccccc;">%s</div>' % (b.id(), b.com()))
                     for c in thr.ref_to_post(b.id()):
-                        r.write('<pre>%s</pre>' % cgi.escape(c.com()))
+                        r.write('<div id="p%d" style="background: #efefef; margin:1em;margin-left:2em;">%s</div>' % (c.id(), c.com()))
         r.write('''
     </body>
 </html>''')
