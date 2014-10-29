@@ -3,6 +3,7 @@ import logging
 import model
 import board
 import cgi
+import bandcamp
 
 # class BandPost(ndb.Model):
 #     pid = ndb.IntegerProperty()
@@ -24,6 +25,21 @@ def index(e, list):
 def get_db_open_threads():
     thrs = model.ThreadProp.open_threads()
     return [board.Thread(prop=p) for p in thrs]
+
+def get_db_popular_bands():
+    thrs = [board.Thread(prop=p) for p in model.ThreadProp.all_threads()]
+    bands = {}
+    for t in thrs:
+        for p in t.posts:
+            if p.is_band():
+                nrefs = len(t.ref_to_post(p.id()))
+                urls = bandcamp.extract_urls(board.textify(p.com()))
+                slugs = set([bandcamp.BandcampUrl(u).band_slug() for u in urls]) # set to remove dups
+                for s in slugs:
+                    bands[s] = bands.get(s, 0) + nrefs
+
+    return [(bandcamp.BandcampUrl(slug=s), bands[s]) for s in sorted(bands.keys(), key=lambda x: bands[x], reverse=True)]
+
 
 def update_thread_db():
     openthrs = get_db_open_threads()
@@ -70,6 +86,15 @@ class UpdatePage(webapp2.RequestHandler):
         update_thread_db()
         r.write("done!\n")
 
+class PopularPage(webapp2.RequestHandler):
+    def get(self):
+        r = self.response
+        r.headers['Content-Type'] = 'text/html'
+
+        bands = get_db_popular_bands()
+        for (b, n) in bands:
+            r.write('<a href="%s">%s</a> - %d<br/>' % (b.canonical(), b.band_slug(), n))
+
 class OpenPage(webapp2.RequestHandler):
     def get(self):
         r = self.response
@@ -101,5 +126,6 @@ class OpenPage(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/update', UpdatePage),
-    ('/open', OpenPage)
+    ('/open', OpenPage),
+    ('/popular', PopularPage)
 ], debug=True)

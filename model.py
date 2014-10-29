@@ -20,3 +20,8 @@ class ThreadProp(ndb.Model):
     def open_threads(cls):
         q = cls.query(ancestor=thread_key()).filter(cls.open == True).order(-cls.date)
         return q.fetch()
+
+    @classmethod
+    def all_threads(cls):
+        q = cls.query(ancestor=thread_key()).order(-cls.date)
+        return q.fetch()
