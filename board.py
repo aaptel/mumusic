@@ -3,6 +3,7 @@
 import sys
 sys.path.insert(0, 'lib')
 
+from bs4 import BeautifulSoup as BS
 import requests as R
 import re
 import datetime
@@ -12,44 +13,9 @@ import pickle
 CATALOG_URL = 'http://a.4cdn.org/mu/catalog.json'
 THREAD_URL  = 'http://a.4cdn.org/mu/thread/%d.json'
 
-#
-# shitty regex based html-to-text converter
-#
-
-ent_table = {
-    'quot': '"',
-    'apos': "'",
-    'amp': '&',
-    'lt': '<',
-    'gt': '>',
-}
-
-link_rx = re.compile(r'''<a href="([^"]+)" class="([^"]+)">([^<]+)</a>''', re.IGNORECASE)
-ent_rx = re.compile(r'''&(?:([a-z]+)|#(\d+));''', re.IGNORECASE)
-
-def repl_link(m):
-    ref = m.group(1)
-    cl  = m.group(2)
-    txt = m.group(3)
-
-    r = re.match(r'#p(\d+)', ref)
-    if r:
-        return '>>' + r.group(1)
-    return txt #textify(txt)
-
-def repl_ent(m):
-    if m.group(1):
-        return ent_table.get(m.group(1), unichr(0xfffd).encode('utf-8'))
-    else:
-        return unichr(int(m.group(2))).encode('utf-8')
-
 def textify(html):
-    r = html
-    r = re.sub(link_rx, repl_link, r)
-    r = re.sub(r'''</?(?:span|wbr)[^>]*>''', '', r)
-    r = re.sub('<br>', "\n", r)
-    r = re.sub(ent_rx, repl_ent, r)
-    return r
+    # div hack to prevent BS UserWarning about html looking like a url
+    return BS('<div>'+html+'</div>').get_text()
 
 #
 # Post and Thread class to handle 4chan stuff
@@ -93,12 +59,11 @@ class Post:
         return [int(id) for id in ids]
 
     def is_band(self):
-        r = False
-        r |= re.search(r'\.bandcamp\.com', self.com()) is not None
-        r |= re.search(r'\.bandcamp\.com', textify(self.com())) is not None
-        # if self.id() == 51004223:
-        #     return True
-        return r
+        t = self.com()
+        if re.search(r'%s', t):
+            print "\n\n\t",t,"\n\n"
+        r = re.search(r'\.bandcamp\.com', textify(self.com()))
+
 
     def is_comment(self):
         refs = self.refs()
@@ -106,6 +71,8 @@ class Post:
             if p.id() in refs:
                 return True
         return False
+
+
 
 class Thread(Post):
     def __init__(self, json=None, prop=None):
@@ -180,8 +147,6 @@ def is_band_thread(thr):
         if p.is_band():
             n += 1
 
-
-    #print "n=",n
     if n >= threshold:
         return True
 
@@ -194,6 +159,4 @@ def get_catalog_threads():
         for thr in page['threads']:
             if is_band_thread(thr):
                 r.append(Thread(json=thr))
-                # print "> %s\n%s\n" % (textify(thr.get('sub', '[no sub]').encode('utf-8')),
-                #                       textify(thr.get('com', '[no com]').encode('utf-8')))
     return r
