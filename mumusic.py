@@ -4,17 +4,13 @@ import model
 import board
 import cgi
 import bandcamp
+import jinja2
+import os
 
-# class BandPost(ndb.Model):
-#     pid = ndb.IntegerProperty()
-#     date = ndb.DateTimeProperty(auto_now_add=True)
-#     text = ndb.StringProperty()
-#     img = ndb.StringProperty()
-
-# class BandComment(ndb.Model):
-#     pid = ndb.IntegerProperty()
-#     date = ndb.DateTimeProperty(auto_now_add=True)
-#     text = ndb.StringProperty()
+JINJA_ENV = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)+'/template'),
+    extensions=['jinja2.ext.autoescape'],
+    autoescape=True)
 
 def index(e, list):
     try:
@@ -75,8 +71,12 @@ def update_thread_db():
 class MainPage(webapp2.RequestHandler):
     def get(self):
         r = self.response
-        r.headers['Content-Type'] = 'text/plain'
-        r.write('Zoooooooob')
+        tpl = JINJA_ENV.get_template('base.html')
+        val = {
+            'zob': '<a href="zob">cake</a>'
+        }
+        r.write(tpl.render(val))
+
 
 class UpdatePage(webapp2.RequestHandler):
     def get(self):

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>/mu/tant music</title>
+        <link href="/static/style.css" type="text/css" rel="stylesheet">
+
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    </head>
+    <body>
+      <div id=header>
+        <h1>/mu/tant music</h1>
+      </div>
+      <div id=main>
+        <div id=active>
+          <h2>active threads</h2>
+          <ul>
+            <li><a href="#">bandcamp central station</a></li>
+            <li><a href="#">bandcamp thread</a></li>
+          </ul>
+        </div>
+
+        <p>Foo : {{ zob }}</p>        <p>Foo : {{ zob }}</p>
+      </div>
+    </body>
+</html>
+{% endautoescape %}
