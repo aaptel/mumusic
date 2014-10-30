@@ -7,8 +7,13 @@ from bs4 import BeautifulSoup as BS
 import requests as R
 import re
 import datetime
-import model
 import pickle
+import os
+
+# don't import model in running as stand alone script
+if os.environ.get('SERVER_SOFTWARE', ''):
+    import model
+
 
 CATALOG_URL = 'http://a.4cdn.org/mu/catalog.json'
 THREAD_URL  = 'http://a.4cdn.org/mu/thread/%d.json'
@@ -129,7 +134,7 @@ class Thread(Post):
 def is_band_thread(thr):
     sub = textify(thr.get('sub', ''))
     com = textify(thr.get('com', ''))
-    rx = r'bandcamp.+(?:topic|thread)'
+    rx = r'bandcamp.+(?:topic|thread|general)'
     f = re.IGNORECASE
 
     if re.search(rx, sub, flags=f) or re.match(rx, com, flags=f):
