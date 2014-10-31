@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+{% autoescape true %}
+<h1>all-time popular bands</h1>
+<p>
+  Popularity is defined by the total number of band comments, which are
+  simply posts quoting a band post.
+</p>
+<table>
+  <tr><th class=ref>refs</th><th class=band>band</th></tr>
+  {% for (b, n) in bands %}
+  <tr class="{{ loop.cycle('odd', 'even') }}">
+    <td class=ref>{{ n }}</td>
+    <td class=band>
+      <a href="{{ b.canonical() }}">{{ b.band_slug() }}</a>
+    </td>
+
+  </tr>
+  {% endfor %}
+</table>
+{% endautoescape %}
+{% endblock %}

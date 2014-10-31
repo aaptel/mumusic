@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+{% autoescape true %}
+<h1>list of open threads</h1>
+<p>Posts are filtered and sorted. Band post are directly followed by their comments.</p>
+<ul>
+  {% for t in threads %}
+  <li>
+    <a href="http://boards.4chan.org/mu/threads/{{ t.id() }}"><img alt="4chan" src="/static/4chan.png"/></a>
+    <a href="#t{{t.id() }}">{{ t.sub()|d('[no subject]', true) }}</a>
+    ({{ t.posts|length }} posts)
+    <!-- <ul> -->
+
+  </li>
+  {% endfor %}
+</ul>
+
+<hr/>
+
+{% for t in threads %}
+    <div class=thread id="t{{ t.id() }}">
+      <h2>
+        <a href="http://boards.4chan.org/mu/threads/{{ t.id() }}"><img alt="4chan" src="/static/4chan.png"/></a>
+        <a href="#t{{t.id() }}">{{ t.sub()|d('[no subject]', true) }}</a>
+      </h2>
+      {% for b in t.posts %}
+          {% if b.is_band() %}
+              <div class="band-container {{ loop.cycle('mult1', 'mult2', 'mult3', 'mult4', 'mult5') }}">
+              <div id="p{{ b.id() }}" class="post band">
+                {{ b.com()|safe }}
+              </div>
+              {% for c in t.ref_to_post(b.id()) %}
+                  <div id="p{{ c.id() }}" class="post comment">
+                    {{ c.com()|safe }}
+                  </div>
+              {% endfor %}
+              </div>
+          {% endif %}
+      {% endfor %}
+    </div>
+{% endfor %}
+{% endautoescape %}
+{% endblock %}

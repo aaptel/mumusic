@@ -70,13 +70,8 @@ def update_thread_db():
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
-        r = self.response
         tpl = JINJA_ENV.get_template('base.html')
-        val = {
-            'zob': '<a href="zob">cake</a>'
-        }
-        r.write(tpl.render(val))
-
+        self.response.write(tpl.render({}))
 
 class UpdatePage(webapp2.RequestHandler):
     def get(self):
@@ -88,40 +83,15 @@ class UpdatePage(webapp2.RequestHandler):
 
 class PopularPage(webapp2.RequestHandler):
     def get(self):
-        r = self.response
-        r.headers['Content-Type'] = 'text/html'
-
         bands = get_db_popular_bands()
-        for (b, n) in bands:
-            r.write('<a href="%s">%s</a> - %d<br/>' % (b.canonical(), b.band_slug(), n))
+        tpl = JINJA_ENV.get_template('popular.html')
+        self.response.write(tpl.render({'bands': bands}))
 
 class OpenPage(webapp2.RequestHandler):
     def get(self):
-        r = self.response
-        r.headers['Content-Type'] = 'text/html'
         openthrs = get_db_open_threads()
-
-        r.write('''<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Open threads</title>
-    </head>
-    <body>
-        <h1>Open Threads</h1>
-        ''')
-
-        for thr in openthrs:
-            r.write('<h2><a href="http://boards.4chan.org/mu/thread/%d">"%s"</a></h2>' % (thr.id(), thr.sub()))
-            for b in thr.posts:
-                if b.is_band():
-                    r.write('<div id="p%d" style="background: #cccccc;">%s</div>' % (b.id(), b.com()))
-                    for c in thr.ref_to_post(b.id()):
-                        r.write('<div id="p%d" style="background: #efefef; margin:1em;margin-left:2em;">%s</div>' % (c.id(), c.com()))
-        r.write('''
-    </body>
-</html>''')
-
+        tpl = JINJA_ENV.get_template('open.html')
+        self.response.write(tpl.render({'threads': openthrs}))
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),

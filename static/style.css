@@ -11,33 +11,99 @@ body {
 #header {
     margin: 0;
     padding: 0;
+    text-align: center;
     background: #111111;
 }
 
 #header h1 {
     margin-top: 0;
     margin-bottom: 0;
+    margin-right: 1em;
+    display: inline;
 }
 
 #main {
-    padding: 1em;
-    margin: 0;
+    width: 900px;
+    margin: auto;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
 }
 
-#main p {
+#main td, #main th, #main table {
+    border-collapse: collapse;
+}
 
+div.band-container {
+    margin-bottom: 3em;
+}
+
+div.band-container.mult1 { border-left: 5px solid #481E09; }
+div.band-container.mult2 { border-left: 5px solid #1f4809; }
+div.band-container.mult3 { border-left: 5px solid #093F48; }
+div.band-container.mult4 { border-left: 5px solid #503671; }
+div.band-container.mult5 { border-left: 5px solid #283598; }
+
+div.band-container.mult1 { border-right: 5px solid #481E09; }
+div.band-container.mult2 { border-right: 5px solid #1f4809; }
+div.band-container.mult3 { border-right: 5px solid #093F48; }
+div.band-container.mult4 { border-right: 5px solid #503671; }
+div.band-container.mult5 { border-right: 5px solid #283598; }
+
+
+div.thread h2 {
+    // border-left: 3px solid red;
+    padding-left: .3em;
+}
+
+div.post {
+    padding: .8em;
+}
+
+div.post .quote {
+    color: #59855B;
+}
+
+hr {
+    margin: 3em;
+    border: 0;
+}
+
+div.band {
+    background: #1e1e1e;
+}
+
+div.comment {
+    background: #202020;
+    margin-left: 2em;
+    margin-top:    .4em;
+    margin-bottom: .4em;
+}
+
+tr.odd {
+    background: #1e1e1e;
+}
+
+td.ref, th.ref {
+    text-align: right;
+}
+
+td.band, th.band {
+    padding-left: 1em;
+    text-align: left;
+}
+
+#main table {
+    width: 100%;
+}
+
+#main th {
+    background: #111111;
 }
 
 a {
     color: #CB2C2C;
+    text-decoration: none;
 }
 
-#main h1,h2,h3,h4,h5,h6 {
-    font-size: small;
-}
-
-#active {
-    background: #2C2C2C;
-    float: left;
-    margin-right: 3em;
-}
+#main h1 {font-size: 150%;}
