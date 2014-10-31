@@ -77,7 +77,6 @@ class Post:
         return False
 
 
-
 class Thread(Post):
     def __init__(self, json=None, prop=None):
         self.prop = prop
@@ -109,11 +108,15 @@ class Thread(Post):
         self.json['closed'] = 1
 
     def update(self):
-        data = R.get(THREAD_URL % self.id()).json()
-        self.posts = []
-        self.json = data['posts'][0]
-        for p in data['posts']:
-            self.posts.append(Post(json=p, thr=self))
+        r = R.get(THREAD_URL % self.id())
+        if r.status_code == 200:
+            data = r.json()
+            self.posts = []
+            self.json = data['posts'][0]
+            for p in data['posts']:
+                self.posts.append(Post(json=p, thr=self))
+        elif r.status_code == 404:
+            self.close()
 
     def ref_to_post(self, id):
         r = []

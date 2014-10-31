@@ -63,10 +63,8 @@ def update_thread_db():
 
     # 2. close any open thread not in the catalog anymore
     for thr in openthrs:
-        if thr.id() not in catathr_ids:
-            print "close", thr.id(), "& update"
-            thr.close()
-            thr.to_prop().put()
+        thr.update()
+        thr.to_prop().put()
 
 class MainPage(webapp2.RequestHandler):
     def get(self):

@@ -64,9 +64,7 @@ def update_threads(db):
 
     # 2. close any open thread not in the catalog anymore
     for thr in openthrs:
-        if thr.id() not in catathr_ids:
-            log.info("close %d & update" % thr.id())
-            thr.close()
+        thr.update()
 
     save(thrs, db)
 
