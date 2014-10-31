@@ -121,12 +121,13 @@ class RandomBandPage(webapp2.RequestHandler):
         self.redirect(b.canonical())
 
 app = webapp2.WSGIApplication([
-    webapp2.Route('/',        handler=MainPage),
-    webapp2.Route('/update',  handler=UpdatePage),
+    webapp2.Route('/',        handler=OpenPage),
     webapp2.Route('/open',    handler=OpenPage),
     webapp2.Route('/popular', handler=PopularPage),
     webapp2.Route('/archive', handler=ArchivePage),
     webapp2.Route('/archive/<page:\d+>', handler=ArchivePage),
     webapp2.Route('/thread/<id:\d+>',    handler=ThreadPage),
     webapp2.Route('/random', handler=RandomBandPage),
+
+    webapp2.Route('/update',  handler=UpdatePage),
 ], debug=True)
