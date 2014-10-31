@@ -20,7 +20,7 @@
 {% for t in threads %}
     <div class=thread id="t{{ t.id() }}">
       <h2>
-        <a href="http://boards.4chan.org/mu/threads/{{ t.id() }}"><img alt="4chan" src="/static/4chan.png"/></a>
+        <a href="http://boards.4chan.org/mu/thread/{{ t.id() }}"><img alt="4chan" src="/static/4chan.png"/></a>
         <a href="#t{{t.id() }}">{{ t.sub()|d('[no subject]', true) }}</a>
       </h2>
       {% for b in t.posts %}
