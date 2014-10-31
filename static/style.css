@@ -22,6 +22,11 @@ body {
     display: inline;
 }
 
+#header sup {
+    font-size: x-small;
+    color: #555555;
+}
+
 #main {
     width: 900px;
     margin: auto;
