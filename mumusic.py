@@ -18,6 +18,12 @@ def index(e, list):
     except ValueError:
         return -1
 
+def get_db_thread(id):
+    return board.Thread(prop=model.ThreadProp.thread(id))
+
+def get_db_threads():
+    return [board.Thread(prop=p) for p in model.ThreadProp.all_threads()]
+
 def get_db_open_threads():
     thrs = model.ThreadProp.open_threads()
     return [board.Thread(prop=p) for p in thrs]
@@ -91,9 +97,24 @@ class OpenPage(webapp2.RequestHandler):
         tpl = JINJA_ENV.get_template('open.html')
         self.response.write(tpl.render({'threads': openthrs}))
 
+class ArchivePage(webapp2.RequestHandler):
+    def get(self, **kwargs):
+        thrs = get_db_threads()
+        tpl = JINJA_ENV.get_template('thread-list.html')
+        self.response.write(tpl.render({'threads': thrs}))
+
+class ThreadPage(webapp2.RequestHandler):
+    def get(self, **kwargs):
+        thr = get_db_thread(int(kwargs['id']))
+        tpl = JINJA_ENV.get_template('thread.html')
+        self.response.write(tpl.render({'t': thr}))
+
 app = webapp2.WSGIApplication([
-    ('/', MainPage),
-    ('/update', UpdatePage),
-    ('/open', OpenPage),
-    ('/popular', PopularPage)
+    webapp2.Route('/',        handler=MainPage),
+    webapp2.Route('/update',  handler=UpdatePage),
+    webapp2.Route('/open',    handler=OpenPage),
+    webapp2.Route('/popular', handler=PopularPage),
+    webapp2.Route('/archive', handler=ArchivePage),
+    webapp2.Route('/archive/<page:\d+>', handler=ArchivePage),
+    webapp2.Route('/thread/<id:\d+>',    handler=ThreadPage),
 ], debug=True)

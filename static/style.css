@@ -91,6 +91,7 @@ tr.odd {
 
 td.ref, th.ref {
     text-align: right;
+    width: 6em;
 }
 
 td.band, th.band {
@@ -112,3 +113,16 @@ a {
 }
 
 #main h1 {font-size: 150%;}
+
+table td.date, table th.date {
+    width: 15em;
+}
+
+table td.nbpost, table th.nbpost {
+    width: 5em;
+    text-align: right;
+}
+
+table th.subject {
+    text-align: left;
+}

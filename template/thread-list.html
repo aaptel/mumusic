@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+{% autoescape true %}
+<h1>thread archive</h1>
+<p>{{ threads|length }} threads archived.</p>
+<table>
+  <tr>
+    <th class=date>date</th>
+    <th class=subject>subject</th>
+    <th class=nbpost>#posts</th>
+  </tr>
+  {% for t in threads %}
+  <tr class="{{ loop.cycle('odd', 'even') }}">
+    <td class=date>{{ t.datetime() }}</td>
+    <td class=subject><a href="/thread/{{ t.id() }}">{{ t.sub()|default('[no subject]', true) }}</a></td>
+    <td class=nbpost>{{ t.posts|length }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endautoescape %}
+{% endblock %}

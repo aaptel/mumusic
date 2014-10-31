@@ -25,3 +25,8 @@ class ThreadProp(ndb.Model):
     def all_threads(cls):
         q = cls.query(ancestor=thread_key()).order(-cls.date)
         return q.fetch()
+
+    @classmethod
+    def thread(cls, id):
+        q = cls.query(ancestor=thread_key()).filter(cls.id == id)
+        return q.fetch()[0]
