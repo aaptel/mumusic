@@ -55,7 +55,8 @@ def update_thread_db():
 
     catathrs = board.get_catalog_threads()
     catathr_ids = [thr.id() for thr in catathrs]
-    #from pdb import set_trace;set_trace()
+
+    done = {}
 
     # 1. update or add threads from the catalog
     for thr in catathrs:
@@ -67,16 +68,17 @@ def update_thread_db():
                 print "fetch & update"
                 openthrs[i].update()
                 openthrs[i].to_prop().put()
+                done[i] = True
         else:
             # fetch full thread and create entry in db
             print "fetch & create"
-            thr.update() # fetch full thread
             thr.to_prop().put()
 
     # 2. close any open thread not in the catalog anymore
-    for thr in openthrs:
-        thr.update()
-        thr.to_prop().put()
+    for (i, thr) in enumerate(openthrs):
+        if i not in done:
+            thr.update()
+            thr.to_prop().put()
 
 class MainPage(webapp2.RequestHandler):
     def get(self):

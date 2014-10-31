@@ -9,6 +9,7 @@ import re
 import datetime
 import pickle
 import os
+import time
 
 # don't import model in running as stand alone script
 if os.environ.get('SERVER_SOFTWARE', ''):
@@ -17,6 +18,11 @@ if os.environ.get('SERVER_SOFTWARE', ''):
 
 CATALOG_URL = 'http://a.4cdn.org/mu/catalog.json'
 THREAD_URL  = 'http://a.4cdn.org/mu/thread/%d.json'
+THREAD_SUB_RX = re.compile(r'bandcamp.+(?:topic|thread|general|station)', flags=re.IGNORECASE)
+
+THREAD_FN_RX = re.compile(r'\bbc\b|bandcamp', flags=re.IGNORECASE)
+THREAD_MIN_LINK = 3
+DOWNLOAD_DELAY = .5
 
 def textify(html):
     # div hack to prevent BS UserWarning about html looking like a url
@@ -43,6 +49,11 @@ class Post:
             self.prop = model.PostProp(json=self.json)
         return self.prop
 
+    def filename(self, ext=None):
+        fn = self.json.get('filename', '')
+        if ext:
+            fn += self.json.get('ext', '')
+        return fn
 
     def id(self):
         return self.json['no'] # must exist
@@ -109,6 +120,8 @@ class Thread(Post):
 
     def update(self):
         r = R.get(THREAD_URL % self.id())
+        time.sleep(DOWNLOAD_DELAY)
+
         if r.status_code == 200:
             data = r.json()
             self.posts = []
@@ -134,36 +147,35 @@ class Thread(Post):
     def newer_than(self, thr):
         return self.last_datetime() > thr.last_datetime()
 
-def is_band_thread(thr):
-    sub = textify(thr.get('sub', ''))
-    com = textify(thr.get('com', ''))
-    rx = r'bandcamp.+(?:topic|thread|general)'
-    f = re.IGNORECASE
+    def is_band_thread(self):
+        n = 0
+        for p in self.posts:
+            if p.is_band():
+                n += 1
 
-    if re.search(rx, sub, flags=f) or re.match(rx, com, flags=f):
-        return True
+        if n < THREAD_MIN_LINK:
+            return False
 
-    n = 0
-    threshold = 3
+        # sharethreads are not band threads
+        if re.search(r'share\s*thread', textify(self.sub()), flags=re.IGNORECASE):
+            return False
 
-    if Post(json=thr).is_band():
-        n += 1
+        if re.search(THREAD_SUB_RX, textify(self.sub())):
+            return True
+        if re.search(THREAD_SUB_RX, textify(self.com())):
+            return True
 
-    for pj in thr.get('last_replies', []):
-        p = Post(json=pj)
-        if p.is_band():
-            n += 1
-
-    if n >= threshold:
-        return True
-
-    return False
+        return False
 
 def get_catalog_threads():
     data = R.get(CATALOG_URL).json()
+    time.sleep(DOWNLOAD_DELAY)
+
     r = []
     for page in data:
-        for thr in page['threads']:
-            if is_band_thread(thr):
-                r.append(Thread(json=thr))
+        for tjson in page['threads']:
+            t = Thread(json=tjson)
+            t.update()
+            if t.is_band_thread():
+                r.append(t)
     return r
