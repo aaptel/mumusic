@@ -6,6 +6,7 @@ import cgi
 import bandcamp
 import jinja2
 import os
+import random
 
 JINJA_ENV = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)+'/template'),
@@ -28,8 +29,9 @@ def get_db_open_threads():
     thrs = model.ThreadProp.open_threads()
     return [board.Thread(prop=p) for p in thrs]
 
-def get_db_popular_bands():
-    thrs = [board.Thread(prop=p) for p in model.ThreadProp.all_threads()]
+def get_db_popular_bands(thrs=None):
+    if thrs is None:
+        thrs = get_db_threads()
     bands = {}
     for t in thrs:
         for p in t.posts:
@@ -42,6 +44,10 @@ def get_db_popular_bands():
 
     return [(bandcamp.BandcampUrl(slug=s), bands[s]) for s in sorted(bands.keys(), key=lambda x: bands[x], reverse=True)]
 
+def get_db_random_band():
+    thrs = get_db_threads()
+    bands = get_db_popular_bands(thrs)
+    return random.choice(bands)
 
 def update_thread_db():
     openthrs = get_db_open_threads()
@@ -109,6 +115,11 @@ class ThreadPage(webapp2.RequestHandler):
         tpl = JINJA_ENV.get_template('thread.html')
         self.response.write(tpl.render({'t': thr}))
 
+class RandomBandPage(webapp2.RequestHandler):
+    def get(self):
+        b = get_db_random_band()[0]
+        self.redirect(b.canonical())
+
 app = webapp2.WSGIApplication([
     webapp2.Route('/',        handler=MainPage),
     webapp2.Route('/update',  handler=UpdatePage),
@@ -117,4 +128,5 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/archive', handler=ArchivePage),
     webapp2.Route('/archive/<page:\d+>', handler=ArchivePage),
     webapp2.Route('/thread/<id:\d+>',    handler=ThreadPage),
+    webapp2.Route('/random', handler=RandomBandPage),
 ], debug=True)

@@ -55,7 +55,7 @@ class BandcampUrl:
         base = 'https://%s.bandcamp.com' % m.group(1)
         if m.group(2):
             base += m.group(2)
-        return base
+        return base.encode('utf-8')
 
     def band_slug(self):
         m = re.match(URL_CAPTURE_REGEX, self._url)
