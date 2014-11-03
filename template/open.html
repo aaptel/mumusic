@@ -3,6 +3,12 @@
 {% autoescape true %}
 <h1>list of open threads</h1>
 <p>Posts are filtered and sorted. Band post are directly followed by their comments.</p>
+
+{% if threads|length == 0 %}
+<p>No open threads found. Create one! ...and wait a bit before it
+  shows up here.</p>
+{% else %}
+
 <ul>
   {% for t in threads %}
   <li>
@@ -39,5 +45,6 @@
       {% endfor %}
     </div>
 {% endfor %}
+{% endif %}
 {% endautoescape %}
 {% endblock %}

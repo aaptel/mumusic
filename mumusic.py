@@ -7,6 +7,7 @@ import bandcamp
 import jinja2
 import os
 import random
+from google.appengine.ext import ndb
 
 JINJA_ENV = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)+'/template'),
@@ -18,6 +19,23 @@ def index(e, list):
         return list.index(e)
     except ValueError:
         return -1
+
+def populate_from_archive(db):
+    import cPickle as pickle
+    import gzip
+
+    push = []
+    f = gzip.open(db)
+    thrs = pickle.load(f)
+    for key in thrs:
+        jt = thrs[key]
+        if jt is None:
+            import pdb; pdb.set_trace()
+        t = board.Thread(json=jt)
+        if t.is_band_thread():
+            push.append(t.to_prop())
+
+    ndb.put_multi(push)
 
 def get_db_thread(id):
     return board.Thread(prop=model.ThreadProp.thread(id))
@@ -57,6 +75,7 @@ def update_thread_db():
     catathr_ids = [thr.id() for thr in catathrs]
 
     done = {}
+    push = []
 
     # 1. update or add threads from the catalog
     for thr in catathrs:
@@ -67,18 +86,20 @@ def update_thread_db():
                 # fetch full thread and update entry in db
                 print "fetch & update"
                 openthrs[i].update()
-                openthrs[i].to_prop().put()
+                push.append(openthrs[i].to_prop())
                 done[i] = True
         else:
             # fetch full thread and create entry in db
             print "fetch & create"
-            thr.to_prop().put()
+            push.append(thr.to_prop())
 
     # 2. close any open thread not in the catalog anymore
     for (i, thr) in enumerate(openthrs):
         if i not in done:
             thr.update()
-            thr.to_prop().put()
+            push.append(thr.to_prop())
+
+    ndb.put_multi(push)
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
@@ -87,11 +108,13 @@ class MainPage(webapp2.RequestHandler):
 
 class UpdatePage(webapp2.RequestHandler):
     def get(self):
-        r = self.response
-        r.headers['Content-Type'] = 'text/plain'
-        r.write("updating...\n")
         update_thread_db()
-        r.write("done!\n")
+        self.redirect('/')
+
+class PopulatePage(webapp2.RequestHandler):
+    def get(self):
+        populate_from_archive('mu_db.pkl.gz')
+        self.redirect('/')
 
 class PopularPage(webapp2.RequestHandler):
     def get(self):
@@ -119,8 +142,11 @@ class ThreadPage(webapp2.RequestHandler):
 
 class RandomBandPage(webapp2.RequestHandler):
     def get(self):
-        b = get_db_random_band()[0]
-        self.redirect(b.canonical())
+        try:
+            b = get_db_random_band()[0]
+            self.redirect(b.canonical())
+        except IndexError:
+            self.redirect('/')
 
 app = webapp2.WSGIApplication([
     webapp2.Route('/',        handler=OpenPage),
@@ -131,5 +157,6 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/thread/<id:\d+>',    handler=ThreadPage),
     webapp2.Route('/random', handler=RandomBandPage),
 
-    webapp2.Route('/update',  handler=UpdatePage),
+    webapp2.Route('/update',   handler=UpdatePage),
+    webapp2.Route('/populate', handler=PopulatePage),
 ], debug=True)

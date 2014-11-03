@@ -2,31 +2,29 @@
 
 from google.appengine.ext import ndb
 
-THREAD_KEY_NAME = 'threads'
-
-def thread_key():
-    return ndb.Key('ThreadProp', THREAD_KEY_NAME)
+def thread_key(tid):
+    return ndb.Key(ThreadProp, str(tid))
 
 class PostProp(ndb.Model):
-    json = ndb.JsonProperty()
+    json = ndb.PickleProperty()
 
 class ThreadProp(ndb.Model):
-    id = ndb.IntegerProperty()
+    tid = ndb.IntegerProperty()
     open = ndb.BooleanProperty()
-    date = ndb.DateTimeProperty()
+    cdate = ndb.DateTimeProperty() # creation
+    mdate = ndb.DateTimeProperty() # last update
     posts = ndb.StructuredProperty(PostProp, repeated=True)
 
     @classmethod
     def open_threads(cls):
-        q = cls.query(ancestor=thread_key()).filter(cls.open == True).order(-cls.date)
+        q = cls.query().filter(cls.open == True).order(-cls.mdate)
         return q.fetch()
 
     @classmethod
     def all_threads(cls):
-        q = cls.query(ancestor=thread_key()).order(-cls.date)
+        q = cls.query().order(-cls.mdate)
         return q.fetch()
 
     @classmethod
-    def thread(cls, id):
-        q = cls.query(ancestor=thread_key()).filter(cls.id == id)
-        return q.fetch()[0]
+    def thread(cls, tid):
+        return cls.get_by_id(str(tid))

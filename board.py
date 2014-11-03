@@ -3,6 +3,7 @@
 import sys
 sys.path.insert(0, 'lib')
 
+import bs4
 from bs4 import BeautifulSoup as BS
 import requests as R
 import re
@@ -42,6 +43,7 @@ class Post:
         elif json is not None:
             self.json = json
 
+
     def to_prop(self):
         if self.prop:
             self.prop.json = self.json
@@ -62,7 +64,10 @@ class Post:
         return self.json.get('sub', '')
 
     def com(self):
-        return self.json.get('com', '')
+        com = self.json.get('com', '')
+        com = re.sub('<br>', '<br/>', com)
+        com = re.sub('<wbr>', '', com)
+        return urlify_dumb(com)
 
     def timestamp(self):
         return self.json['time']
@@ -79,7 +84,6 @@ class Post:
         r = re.search(r'\.bandcamp\.com', t)
         return r is not None
 
-
     def is_comment(self):
         refs = self.refs()
         for p in self.thr.posts:
@@ -91,24 +95,38 @@ class Post:
 class Thread(Post):
     def __init__(self, json=None, prop=None):
         self.prop = prop
+        self.posts = []
 
         if prop is not None:
             self.posts = [Post(prop=p, thr=self) for p in prop.posts]
             self.json = self.posts[0].json
         elif json is not None:
-            self.json = json
+            if 'posts' in json:
+                # thread page
+                self.json = json['posts'][0]
+                try:
+                    self.posts = [Post(json=p, thr=self) for p in json['posts']]
+                except KeyError:
+                    import pdb; pdb.set_trace()
+            else:
+                self.json = json
+
 
     def to_prop(self):
         if self.prop:
-            # id won't change
+            # update
+            # tid won't change
             self.prop.open = self.is_open()
-            self.prop.date = self.datetime()
+            self.prop.cdate = self.datetime()
+            self.prop.mdate = self.last_datetime()
             self.prop.posts = [p.to_prop() for p in self.posts] # may not be very efficient
         else:
-            self.prop = model.ThreadProp(parent=model.thread_key(),
-                                         id=self.id(),
+            # create new prop
+            self.prop = model.ThreadProp(id=str(self.id()),
+                                         tid=self.id(),
                                          open=self.is_open(),
-                                         date=self.datetime(),
+                                         cdate=self.datetime(),
+                                         mdate=self.last_datetime(),
                                          posts=[p.to_prop() for p in self.posts])
         return self.prop
 
@@ -179,3 +197,26 @@ def get_catalog_threads():
             if t.is_band_thread():
                 r.append(t)
     return r
+
+
+
+def repl_url(m):
+    proto = m.group(1)
+    link = m.group(0)
+
+    if proto and proto.startswith('http'):
+        return '<a class=ext href="%s">%s</a>' % (link, link)
+    else:
+        return '<a class=ext href="http://%s">%s</a>' % (link, link)
+
+def urlify_dumb(source):
+    return re.sub(r'''(?:(https?)://)?[^<>\s;&]{3,}\.[^\s<>;&]{2,}''', repl_url, source)
+
+def urlify(source):
+    b = BS(source)
+    for e in b.contents:
+        if type(e) == bs4.element.NavigableString:
+            txt = unicode(e)
+            rep = re.sub(r'''(?:(https?)://)?\S{3,}\.\S{2,}''', repl_url, txt)
+            e.replace_with(BS(rep))
+    return unicode(b)
