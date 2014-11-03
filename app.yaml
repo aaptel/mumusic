@@ -13,7 +13,7 @@ libraries:
 handlers:
 - url: /update
   script: mumusic.app
-  login: amdin
+  login: admin
 - url: /static
   static_dir: static
 - url: /.*
