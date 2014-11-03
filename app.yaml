@@ -11,6 +11,9 @@ libraries:
   version: latest
 
 handlers:
+- url: /update
+  script: mumusic.app
+  login: amdin
 - url: /static
   static_dir: static
 - url: /.*

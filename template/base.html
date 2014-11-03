@@ -15,6 +15,7 @@
         <a href="/popular">popular</a> -
         <a href="/archive">archive</a> -
         <a href="/random">random</a>
+        <span id=dateupdate>last update: {{ dateupdate.strftime('%Y-%m-%d %H:%M') }}</span>
       </div>
       <div id=main>{% block content %}{% endblock %}</div>
     </body>

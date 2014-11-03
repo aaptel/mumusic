@@ -126,3 +126,14 @@ table td.nbpost, table th.nbpost {
 table th.subject {
     text-align: left;
 }
+
+a.ext {
+    color: #3D90E8;
+    font-weight: bold;
+}
+
+#dateupdate {
+    padding-left: 3em;
+    font-size: 80%;
+    color: #5C5C5C;
+}

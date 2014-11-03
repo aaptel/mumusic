@@ -100,6 +100,7 @@ def update_thread_db():
             push.append(thr.to_prop())
 
     ndb.put_multi(push)
+    model.DbUpdateProp.update()
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
@@ -120,25 +121,25 @@ class PopularPage(webapp2.RequestHandler):
     def get(self):
         bands = get_db_popular_bands()
         tpl = JINJA_ENV.get_template('popular.html')
-        self.response.write(tpl.render({'bands': bands}))
+        self.response.write(tpl.render({'dateupdate': model.DbUpdateProp.last(), 'bands': bands}))
 
 class OpenPage(webapp2.RequestHandler):
     def get(self):
         openthrs = get_db_open_threads()
         tpl = JINJA_ENV.get_template('open.html')
-        self.response.write(tpl.render({'threads': openthrs}))
+        self.response.write(tpl.render({'dateupdate': model.DbUpdateProp.last(), 'threads': openthrs}))
 
 class ArchivePage(webapp2.RequestHandler):
     def get(self, **kwargs):
         thrs = get_db_threads()
         tpl = JINJA_ENV.get_template('thread-list.html')
-        self.response.write(tpl.render({'threads': thrs}))
+        self.response.write(tpl.render({'dateupdate': model.DbUpdateProp.last(), 'threads': thrs}))
 
 class ThreadPage(webapp2.RequestHandler):
     def get(self, **kwargs):
         thr = get_db_thread(int(kwargs['id']))
         tpl = JINJA_ENV.get_template('thread.html')
-        self.response.write(tpl.render({'t': thr}))
+        self.response.write(tpl.render({'dateupdate': model.DbUpdateProp.last(), 't': thr}))
 
 class RandomBandPage(webapp2.RequestHandler):
     def get(self):
