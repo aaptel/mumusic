@@ -110,7 +110,7 @@ class MainPage(webapp2.RequestHandler):
 class UpdatePage(webapp2.RequestHandler):
     def get(self):
         update_thread_db()
-        self.redirect('/')
+        self.response.write('ok')
 
 class PopulatePage(webapp2.RequestHandler):
     def get(self):
