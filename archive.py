@@ -11,6 +11,7 @@ import os
 import json
 import gzip
 import requests
+import re
 
 LOG = logging.getLogger('archive')
 
@@ -20,6 +21,12 @@ THREAD_URL  = 'http://a.4cdn.org/mu/thread/%d.json'
 DOWNLOAD_DELAY = .6
 LOG_DIR = 'logs'
 NB_DL = 0
+
+THREAD_RX = map(lambda x: re.compile(x, flags=re.IGNORECASE), [
+    'bandcamp', 'soundcloud', 'youtube', 'jamendo', 'alonetone', 'altsounds', '8tracks',
+    'vibedeck', 'topspin', 'noisetrade', 'myspace',
+])
+
 
 def init_log(level=logging.INFO, email=False, file=False):
     LOG.setLevel(level)
@@ -124,6 +131,19 @@ def get_thread(no):
         LOG.error('fetch thread %d: status_code = %d, response dump in %s', no, r.status_code, dump_object(r.text))
         return None
 
+
+def clean(html):
+    return re.sub(r'''<wbr>''', '', html)
+
+def keep_thread_p(t):
+    if len(t['posts']) > 10:
+        for p in t['posts']:
+            txt = clean(p.get('sub', '') + ' ' + p.get('com', ''))
+            for rx in THREAD_RX:
+                if re.search(rx, txt):
+                    return True
+    return False
+
 def update(db):
     start = time.time()
     thrs = load(db)
@@ -142,11 +162,23 @@ def update(db):
             n = t['no']
             r = get_thread(n)
             if r is not None:
-                thrs[n] = r.json()
-                nb_thr += 1
+                t = r.json()
+                if keep_thread_p(t):
+                    thrs[n] = t
+                    nb_thr += 1
 
     save(thrs, db)
     LOG.info('update done in %.03fs (%d fetch, %d threads)', time.time()-start, NB_DL, nb_thr)
+
+def purge(db):
+    start = time.time()
+    thrs = load(db)
+    new = {}
+    for k in thrs:
+        if keep_thread_p(thrs[k]):
+            new[k] = thrs[k]
+    save(new, db)
+    LOG.info('purge done in %.03fs (%d -> %d threads)', time.time()-start, len(thrs), len(new))
 
 def dump_json(db, thr=None, pretty=None):
     thrs = load(db)
@@ -167,6 +199,7 @@ def main():
     parser.add_argument('-f', '--file', help='use file as pickle db', default=DEFAULT_DB)
     parser.add_argument('-j', '--json', help='dump on stdout as json', action='store_true')
     parser.add_argument('-p', '--pretty', help='pretty print json output', action='store_true')
+    parser.add_argument('-P', '--purge', help='purge db (re-apply thread predicate)', action='store_true')
     parser.add_argument('-t', '--thread', help='dump single thread', type=int)
     parser.add_argument('-v', '--verbose', help='verbose, show debug messages', action='store_true')
     parser.add_argument('-l', '--log', help='log output type', action='append', default=[], choices=['file', 'email'])
@@ -178,6 +211,8 @@ def main():
 
     if args.json:
         dump_json(args.file, thr=args.thread, pretty=args.pretty)
+    elif args.purge:
+        purge(args.file)
     else:
         update(args.file)
 
