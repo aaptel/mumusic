@@ -1,3 +1,29 @@
-# /mu/ music browser
+         __                  __      _ _
+        / / __ ___  _   _   / /   __| | |__
+       / / '_ ` _ \| | | | / /   / _` | '_ \
+      / /| | | | | | |_| |/ /   | (_| | |_) |
+     /_/ |_| |_| |_|\__,_/_/     \__,_|_.__/
+     ...or mu-archive or mumusic or whatever
+             haven't decided yet...
 
--knarf
+
+# Why
+
+- keep traces of the music made by mutants
+- archive all bandcamp threads for later viewing
+- might handle soundcloud or <other website> at some point
+
+# How
+
+- the site is made for google appengine
+- written for the python 2.7 runtime
+- fetch threads on /mu/ every 30mn
+- keep the ones detected as bandcamp threads
+
+# Implementation
+
+- `model.py`: db model, very dumb (and pretty slow)
+- `board.py`: board/thread/post manipulation
+- `mumusic.py`: page routes, update procedure, etc
+- `template/`: html templates
+- `lib/`: python dependencies
