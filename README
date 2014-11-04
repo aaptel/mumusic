@@ -27,3 +27,4 @@
 - `mumusic.py`: page routes, update procedure, etc
 - `template/`: html templates
 - `lib/`: python dependencies
+- `archive.py`: independant script to backup /mu/ to pickle/JSON.
