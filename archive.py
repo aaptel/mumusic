@@ -85,7 +85,7 @@ def load(db):
     except IOError:
         r = {}
 
-    LOG.info('db loaded in %.03fs', time.time()-start)
+    LOG.info('db %s loaded in %.03fs', db, time.time()-start)
     return r
 
 def save(thrs, db):
@@ -94,7 +94,7 @@ def save(thrs, db):
     start = time.time()
     f = gzip.open(db, 'w+')
     pickle.dump(thrs, f)
-    LOG.info('db saved in %.03fs', time.time()-start)
+    LOG.info('db %s saved in %.03fs', db, time.time()-start)
 
 def get(url):
     global NB_DL
@@ -168,7 +168,7 @@ def update(db):
                     nb_thr += 1
 
     save(thrs, db)
-    LOG.info('update done in %.03fs (%d fetch, %d threads)', time.time()-start, NB_DL, nb_thr)
+    LOG.info('update done in %.03fs (%d fetch, +%d threads)', time.time()-start, NB_DL, nb_thr)
 
 def purge(db):
     start = time.time()
@@ -178,7 +178,7 @@ def purge(db):
         if keep_thread_p(thrs[k]):
             new[k] = thrs[k]
     save(new, db)
-    LOG.info('purge done in %.03fs (%d -> %d threads)', time.time()-start, len(thrs), len(new))
+    LOG.info('purge done in %.03fs (-%d threads)', time.time()-start, len(thrs)-len(new))
 
 def dump_json(db, thr=None, pretty=None):
     thrs = load(db)
@@ -194,8 +194,21 @@ def dump_json(db, thr=None, pretty=None):
     else:
         json.dump(thrs, sys.stdout, **opts)
 
+def merge(db, files):
+    start = time.time()
+    thrs = load(db)
+    nb = len(thrs)
+    for f in files:
+        ts = load(f)
+        for k in ts:
+            if k not in thrs or len(ts[k]['posts']) > len(thrs[k]):
+                thrs[k] = ts[k]
+    save(thrs, db)
+    LOG.info('merge done in %.03fs (+%d threads)', time.time()-start, len(thrs)-nb)
+
 def main():
     parser = argparse.ArgumentParser(description='Archive /mu/ threads')
+    parser.add_argument('-m', '--merge', help='merge db with another one', nargs='+')
     parser.add_argument('-f', '--file', help='use file as pickle db', default=DEFAULT_DB)
     parser.add_argument('-j', '--json', help='dump on stdout as json', action='store_true')
     parser.add_argument('-p', '--pretty', help='pretty print json output', action='store_true')
@@ -213,6 +226,8 @@ def main():
         dump_json(args.file, thr=args.thread, pretty=args.pretty)
     elif args.purge:
         purge(args.file)
+    elif args.merge:
+        merge(args.file, args.merge)
     else:
         update(args.file)
 
