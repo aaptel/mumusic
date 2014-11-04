@@ -22,11 +22,10 @@ DOWNLOAD_DELAY = .6
 LOG_DIR = 'logs'
 NB_DL = 0
 
-THREAD_RX = map(lambda x: re.compile(x, flags=re.IGNORECASE), [
-    'bandcamp', 'soundcloud', 'youtube', 'jamendo', 'alonetone', 'altsounds', '8tracks',
-    'vibedeck', 'topspin', 'noisetrade', 'myspace',
+THREAD_RX = map(re.compile, [
+    r'bandcamp\.com', r'soundcloud\.com', r'youtube\.com', r'jamendo\.com',
+    r'myspace\.com',
 ])
-
 
 def init_log(level=logging.INFO, email=False, file=False):
     LOG.setLevel(level)
