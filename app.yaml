@@ -14,6 +14,9 @@ handlers:
 - url: /update
   script: mumusic.app
   login: admin
+- url: /populate
+  script: mumusic.app
+  login: admin
 - url: /static
   static_dir: static
 - url: /.*
