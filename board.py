@@ -38,7 +38,6 @@ class Post:
     def __init__(self, json=None, prop=None, thr=None):
         self.prop = prop
         self.thr = thr
-        self.rindex = None
 
         if prop is not None:
             self.json = prop.json
@@ -98,6 +97,7 @@ class Thread(Post):
     def __init__(self, json=None, prop=None):
         self.prop = prop
         self.posts = []
+        self.rindex = None
 
         if prop is not None:
             self.posts = [Post(prop=p, thr=self) for p in prop.posts]
@@ -187,7 +187,7 @@ class Thread(Post):
 
     def build_ref_index(self):
         d = defaultdict(set)
-        self.rindex = {}
+        self.rindex = defaultdict(list)
 
         for p in self.posts:
             for r in p.refs():
@@ -221,7 +221,7 @@ def repl_url(m):
         return '<a class=ext href="http://%s">%s</a>' % (link, link)
 
 def urlify_dumb(source):
-    return re.sub(r'''(?:(https?)://)?[^<>\s;&]{3,}\.[^\s<>;&]{2,}''', repl_url, source)
+    return re.sub(r'''(?:(https?)://)?[^<>\s;&]{2,}[^\s<>;&\.]\.[^\s<>;&\.][^\s<>;&]{1,}''', repl_url, source)
 
 def urlify(source):
     b = BS(source)
