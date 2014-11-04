@@ -3,6 +3,7 @@
 import sys
 sys.path.insert(0, 'lib')
 
+from collections import defaultdict
 import bs4
 from bs4 import BeautifulSoup as BS
 import requests as R
@@ -37,6 +38,7 @@ class Post:
     def __init__(self, json=None, prop=None, thr=None):
         self.prop = prop
         self.thr = thr
+        self.rindex = None
 
         if prop is not None:
             self.json = prop.json
@@ -150,11 +152,9 @@ class Thread(Post):
             self.close()
 
     def ref_to_post(self, id):
-        r = []
-        for p in self.posts:
-            if id in p.refs():
-                r.append(p)
-        return r
+        if not self.rindex:
+            self.build_ref_index()
+        return self.rindex[id]
 
     def last_datetime(self):
         if 'last_replies' in self.json and len(self.json['last_replies']) > 0:
@@ -184,6 +184,17 @@ class Thread(Post):
             return True
 
         return False
+
+    def build_ref_index(self):
+        d = defaultdict(set)
+        self.rindex = {}
+
+        for p in self.posts:
+            for r in p.refs():
+                d[r].add(p)
+        for k in d:
+            self.rindex[k] = sorted(d[k])
+
 
 def get_catalog_threads():
     data = R.get(CATALOG_URL).json()
