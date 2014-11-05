@@ -8,6 +8,7 @@ import jinja2
 import os
 import random
 from google.appengine.ext import ndb
+from collections import defaultdict
 
 JINJA_ENV = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)+'/template'),
@@ -24,15 +25,20 @@ def populate_from_archive(db):
     import cPickle as pickle
     import gzip
 
+    catalog = board.get_catalog_threads(full_thread=False, band_filter=False)
+    open_ids = defaultdict(lambda: False)
+    for t in catalog:
+        open_ids[t.id()] = True
+
     push = []
     f = gzip.open(db)
     thrs = pickle.load(f)
     for key in thrs:
         jt = thrs[key]
-        if jt is None:
-            import pdb; pdb.set_trace()
         t = board.Thread(json=jt)
         if t.is_band_thread():
+            if not open_ids[t.id()]:
+                t.close()
             push.append(t.to_prop())
 
     ndb.put_multi(push)

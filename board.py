@@ -196,7 +196,7 @@ class Thread(Post):
             self.rindex[k] = sorted(d[k])
 
 
-def get_catalog_threads():
+def get_catalog_threads(full_thread=True, band_filter=True):
     data = R.get(CATALOG_URL).json()
     time.sleep(DOWNLOAD_DELAY)
 
@@ -204,8 +204,9 @@ def get_catalog_threads():
     for page in data:
         for tjson in page['threads']:
             t = Thread(json=tjson)
-            t.update()
-            if t.is_band_thread():
+            if full_thread:
+                t.update()
+            if band_filter and t.is_band_thread():
                 r.append(t)
     return r
 
