@@ -205,10 +205,26 @@ def merge(db, files):
     save(thrs, db)
     LOG.info('merge done in %.03fs (+%d threads)', time.time()-start, len(thrs)-nb)
 
+def mu_filter(db):
+    import board
+
+    start = time.time()
+    thrs = load(db)
+    new = {}
+
+    for key in thrs:
+        t = board.Thread(json=thrs[key])
+        if t.is_band_thread():
+            new[key] = thrs[key]
+
+    save(new, db)
+    LOG.info('filter done in %.03fs (%d threads)', time.time()-start, len(new))
+
 def main():
     parser = argparse.ArgumentParser(description='Archive /mu/ threads')
     parser.add_argument('-m', '--merge', help='merge db with another one', nargs='+')
     parser.add_argument('-f', '--file', help='use file as pickle db', default=DEFAULT_DB)
+    parser.add_argument('-F', '--filter', help='filter threads using board.py', action='store_true')
     parser.add_argument('-j', '--json', help='dump on stdout as json', action='store_true')
     parser.add_argument('-p', '--pretty', help='pretty print json output', action='store_true')
     parser.add_argument('-P', '--purge', help='purge db (re-apply thread predicate)', action='store_true')
@@ -223,6 +239,8 @@ def main():
 
     if args.json:
         dump_json(args.file, thr=args.thread, pretty=args.pretty)
+    elif args.filter:
+        mu_filter(args.file)
     elif args.purge:
         purge(args.file)
     elif args.merge:
