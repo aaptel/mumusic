@@ -28,7 +28,7 @@ body {
 }
 
 #main {
-    width: 900px;
+    width: 50em;
     margin: auto;
     margin-top: 0;
     margin-bottom: 0;
@@ -136,4 +136,10 @@ a.ext {
     padding-left: 3em;
     font-size: 80%;
     color: #5C5C5C;
+}
+
+div#faq h2 {
+    margin-top: 2em;
+    font-size: medium;
+    color: #dadada;
 }

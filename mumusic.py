@@ -155,6 +155,11 @@ class RandomBandPage(webapp2.RequestHandler):
         except IndexError:
             self.redirect('/')
 
+class FaqPage(webapp2.RequestHandler):
+    def get(self):
+        tpl = JINJA_ENV.get_template('faq.html')
+        self.response.write(tpl.render({'dateupdate': model.DbUpdateProp.last()}))
+
 app = webapp2.WSGIApplication([
     webapp2.Route('/',        handler=OpenPage),
     webapp2.Route('/open',    handler=OpenPage),
@@ -163,6 +168,7 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/archive/<page:\d+>', handler=ArchivePage),
     webapp2.Route('/thread/<id:\d+>',    handler=ThreadPage),
     webapp2.Route('/random', handler=RandomBandPage),
+    webapp2.Route('/faq', handler=FaqPage),
 
     webapp2.Route('/update',   handler=UpdatePage),
     webapp2.Route('/populate', handler=PopulatePage),
