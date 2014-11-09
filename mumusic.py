@@ -53,24 +53,8 @@ def get_db_open_threads():
     thrs = model.ThreadProp.open_threads()
     return [board.Thread(prop=p) for p in thrs]
 
-def get_db_popular_bands(thrs=None):
-    if thrs is None:
-        thrs = get_db_threads()
-    bands = {}
-    for t in thrs:
-        for p in t.posts:
-            if p.is_band():
-                nrefs = len(t.ref_to_post(p.id()))
-                urls = bandcamp.extract_urls(board.textify(p.com()))
-                slugs = set([bandcamp.BandcampUrl(u).band_slug() for u in urls]) # set to remove dups
-                for s in slugs:
-                    bands[s] = bands.get(s, 0) + nrefs
-
-    return [(bandcamp.BandcampUrl(slug=s), bands[s]) for s in sorted(bands.keys(), key=lambda x: bands[x], reverse=True)]
-
 def get_db_random_band():
-    thrs = get_db_threads()
-    bands = get_db_popular_bands(thrs)
+    bands = model.BandProp.popular()
     return random.choice(bands)
 
 def update_thread_db():
@@ -108,14 +92,47 @@ def update_thread_db():
     ndb.put_multi(push)
     model.DbUpdateProp.update()
 
+def update_band_db(thrs=None):
+    if thrs is None:
+        # update everything
+        thrs = get_db_threads()
+
+    bands = {}
+
+    for t in thrs:
+        for p in t.posts:
+            if p.is_band():
+                nrefs = len(t.ref_to_post(p.id()))
+                urls = bandcamp.extract_urls(board.textify(p.com()))
+                slugs = set([bandcamp.BandcampUrl(u).band_slug() for u in urls]) # set to remove dups
+                for s in slugs:
+                    if s not in bands:
+                        bands[s] = model.BandProp(id=s, nbcom=0, nbpost=0)
+                    bands[s].nbcom += nrefs
+                    bands[s].nbpost += 1
+
+    for s, b in bands.iteritems():
+        bc = bandcamp.BandcampUrl(slug=s)
+        b.name = bc.artist()
+        b.com_per_post = float(b.nbcom)/b.nbpost
+
+    ndb.put_multi(bands.values())
+
 class MainPage(webapp2.RequestHandler):
     def get(self):
         tpl = JINJA_ENV.get_template('base.html')
         self.response.write(tpl.render({}))
 
 class UpdatePage(webapp2.RequestHandler):
-    def get(self):
-        update_thread_db()
+    def get(self, type):
+        if type == 'thread':
+            update_thread_db()
+        elif type == 'band':
+            update_band_db()
+        else:
+            self.response.write('invalid type')
+            return
+
         self.response.write('ok')
 
 class PopulatePage(webapp2.RequestHandler):
@@ -123,11 +140,24 @@ class PopulatePage(webapp2.RequestHandler):
         populate_from_archive('mu_db.pkl.gz')
         self.redirect('/')
 
+# TODO: when updating threads, fetch all bandprops, and only update
+# artist when necessary
 class PopularPage(webapp2.RequestHandler):
     def get(self):
-        bands = get_db_popular_bands()
+        bands = model.BandProp.popular(50)
         tpl = JINJA_ENV.get_template('popular.html')
-        self.response.write(tpl.render({'dateupdate': model.DbUpdateProp.last(), 'bands': bands}))
+        self.response.write(tpl.render({
+            'dateupdate': model.DbUpdateProp.last(),
+            'bands': [
+                {
+                    'url': bandcamp.BandcampUrl(slug=b.key.id()).canonical(),
+                    'name': b.name,
+                    'nbpost' : b.nbpost,
+                    'nbcom' : b.nbcom,
+                    'com_per_post' : b.com_per_post,
+                } for b in bands
+            ]
+        }))
 
 class OpenPage(webapp2.RequestHandler):
     def get(self):
@@ -170,6 +200,6 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/random', handler=RandomBandPage),
     webapp2.Route('/faq', handler=FaqPage),
 
-    webapp2.Route('/update',   handler=UpdatePage),
+    webapp2.Route('/update/<type>',   handler=UpdatePage),
     webapp2.Route('/populate', handler=PopulatePage),
 ], debug=True)

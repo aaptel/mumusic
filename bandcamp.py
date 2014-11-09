@@ -40,14 +40,19 @@ class BandcampUrl:
 
     def soup(self):
         if self._bs is None:
-            r = R.get(self._url)
+            # local dev env doesn't like https...
+            url = re.sub('^https', 'http', self._url)
+            r = R.get(url)
             self._bs = BS(r.text)
         return self._bs
 
     def artist(self):
         if self._artist is None:
-            # should works on artist, album or track pages
-            self._artist = self.soup().select('p#band-name-location span.title')[0].get_text()
+            try:
+                # should works on artist, album or track pages
+                self._artist = self.soup().select('p#band-name-location span.title')[0].get_text()
+            except:
+                self._artist = self.band_slug() + ' (invalid url?)'
         return self._artist
 
     def canonical(self):

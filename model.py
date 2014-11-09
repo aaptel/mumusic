@@ -44,3 +44,19 @@ class DbUpdateProp(ndb.Model):
             return t.date
         else:
             return datetime.datetime.fromtimestamp(0)
+
+class BandProp(ndb.Model):
+    name = ndb.StringProperty()
+    nbpost = ndb.IntegerProperty()
+    nbcom = ndb.IntegerProperty()
+    com_per_post = ndb.FloatProperty()
+
+    @classmethod
+    def popular(cls, n=None):
+        q = cls.query().filter(cls.nbcom >= 10)
+        r = None
+        if n is None:
+            r = q.fetch()
+        else:
+            r = q.fetch(n)
+        return sorted(r, key=lambda x: -x.com_per_post)

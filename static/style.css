@@ -89,10 +89,16 @@ tr.odd {
     background: #1e1e1e;
 }
 
-td.ref, th.ref {
+td.nbcom, th.nbcom {
     text-align: right;
     width: 6em;
 }
+
+td.nbpost, th.nbpost {
+    text-align: right;
+    width: 6em;
+}
+
 
 td.band, th.band {
     padding-left: 1em;

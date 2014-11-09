@@ -1,4 +1,7 @@
 cron:
-- description: update db
-  url: /update
+- description: update thread db
+  url: /update/thread
+  schedule: every 30 mins
+- description: update band db
+  url: /update/band
   schedule: every 30 mins
