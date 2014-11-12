@@ -7,6 +7,7 @@ import bandcamp
 import jinja2
 import os
 import random
+import re
 from google.appengine.ext import ndb
 from collections import defaultdict
 
@@ -54,8 +55,11 @@ def get_db_open_threads():
     return [board.Thread(prop=p) for p in thrs]
 
 def get_db_random_band():
-    bands = model.BandProp.popular()
-    return random.choice(bands)
+    bands = model.BandProp.all_bands()
+    while True:
+        b = random.choice(bands)
+        if not re.match('invalid url', b.name):
+            return b
 
 def update_thread_db():
     openthrs = get_db_open_threads()

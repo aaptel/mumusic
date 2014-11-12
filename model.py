@@ -52,6 +52,10 @@ class BandProp(ndb.Model):
     com_per_post = ndb.FloatProperty()
 
     @classmethod
+    def all_bands(cls):
+        return cls.query().fetch()
+
+    @classmethod
     def popular(cls, n=None):
         q = cls.query().filter(cls.nbcom >= 10)
         r = None
