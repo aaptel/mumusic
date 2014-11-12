@@ -180,7 +180,8 @@ class ThreadPage(webapp2.RequestHandler):
 class RandomBandPage(webapp2.RequestHandler):
     def get(self):
         try:
-            b = get_db_random_band()[0]
+            prop = get_db_random_band()
+            b = bandcamp.BandcampUrl(slug=prop.key.id())
             self.redirect(b.canonical())
         except IndexError:
             self.redirect('/')
