@@ -58,7 +58,7 @@ def get_db_random_band():
     bands = model.BandProp.all_bands()
     while True:
         b = random.choice(bands)
-        if not re.match('invalid url', b.name):
+        if not re.search('invalid url', b.name):
             return b
 
 def update_thread_db():
