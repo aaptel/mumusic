@@ -12,9 +12,10 @@
   </h2>
   {% for b in t.posts %}
   {% if b.is_band() %}
-  <div class="band-container {{ loop.cycle('mult1', 'mult2', 'mult3', 'mult4', 'mult5') }}">
+  <div id="cont-{{ b.id() }}" class="band-container {{ loop.cycle('mult1', 'mult2', 'mult3', 'mult4', 'mult5') }}">
     <div id="p{{ b.id() }}" class="post band">
       {{ b.com()|safe }}
+      <div style="display:hide" class="js-comment"></div>
     </div>
     {% for c in t.ref_to_post(b.id()) %}
     <div id="p{{ c.id() }}" class="post comment">

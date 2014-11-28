@@ -149,3 +149,14 @@ div#faq h2 {
     font-size: medium;
     color: #dadada;
 }
+
+a.bandquote {
+    color: gold;
+    font-weight: bold;
+}
+
+.js-comment {
+    margin-top: 1em;
+    margin-left: 1em;
+    color: red;
+}
