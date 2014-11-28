@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+{% autoescape true %}
+<h1>faq</h1>
+
+<div id=faq>
+
+<h2>What is the purpose of this site?</h2>
+<p>
+  I find the music made by the people of /mu/ really interesting. It's
+  usually shared in bandcamp or soundcloud threads where people post
+  and comment music. Once the thread dies, everything is lost. The
+  point of this website is to keep a trace of everything posted on
+  those threads: the music and the comments.
+</p>
+<p>
+  Right now, only bandcamp threads are handled, but it might
+  change.
+</p>
+
+<h2>When is the site updated?</h2>
+<p>The archive is updated every 30 minutes.</p>
+
+<h2>How does the thread detection work?</h2>
+<p>I've tweaked it for a long time to see what works. Right now to be
+  archived a thread needs:</p>
+<ul>
+  <li>at least 3 posts containing bandcamp links.</li>
+  <li>a subject which doesn't contain <code>sharethread</code>.</li>
+  <li>
+    a post or subject containing <code>bandcamp</code> followed by any of
+    the following words: <code>thread</code>, <code>topic</code>, <code>general</code>,
+    <code>station</code>. It doesn't have to be exactly after it, just in the rest of the
+    subject/post.
+  </li>
+</ul>
+
+<h2>What did you use to make this?</h2>
+<p>
+  The software running the site is free (as in freedom). You can find
+  the source code
+  on <a href="https://github.com/aaptel/mumusic">github</a>. Everyone
+  is welcomed to improve it.
+</p>
+<p>
+  It's written in <a href="http://python.org">Python</a> and runs on a
+  free instance of <a href="https://appengine.google.com/">Google App
+  Engine</a>. It's my first project using it so the code may be
+  crappy/not scalable. I'm trying to improve it as I go.
+</p>
+
+<h2>I have a great idea! Why don't you do <em>X</em>?</h2>
+<p>
+  You can <a href="https://github.com/aaptel/mumusic/issues/new">make
+  a feature request on github</a>, where it can be discussed.
+</p>
+
+<h2>Who are you?</h2>
+<p>
+  Just a fellow mutant. You can find more on github I guess.
+</p>
+
+</div>
+
+{% endautoescape %}
+{% endblock %}
